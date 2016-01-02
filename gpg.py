@@ -6,6 +6,7 @@
 # args is the result of argparse
 # category means the selected category, expected to be !all
 #
+import re
 import subprocess
 
 

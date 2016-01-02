@@ -1,9 +1,9 @@
 #!/usr/bin/python
 import argparse
 import ConfigParser
+import csv
 import getpass
 import os
-import re
 import sqlite3
 import subprocess
 import sys
@@ -57,6 +57,16 @@ group.add_argument("-l", "--list", action="store_true",
                     help="list all entries")
 parser.add_argument("-d", "--decrypt", action="store_true",
                     help="show decrypted passwords in listing")
+
+#
+# optional commands: --import
+#
+group.add_argument("-i", "--import", dest='importer', action="store_true",
+                    help="import a batch of entries from a CSV")
+parser.add_argument("-f", "--file",
+                    help="file with CSV entries, can be - for stdin")
+parser.add_argument("-n", "--no-action", action="store_true",
+                    help="import CSV entries but do not modify DB")
 
 
 args = parser.parse_args()
@@ -127,6 +137,27 @@ elif args.list:
         dbCon.close()
 
 
+elif args.importer:
+    # args.file
+    # args.no_import
+    dbCon = db.initializeDataBase(config, args.category)
+    cur = dbCon.cursor()
+    length = config.getint(args.category, 'length')
+
+    csvfile = open(args.file, 'rb')
+    reader = csv.reader(csvfile)
+    for row in reader:
+        if row[0][0] == '#':
+            continue
+        crypto = gpg.crypt(config, args.category, row[4], row[3], row[2])
+        if not args.no_action:
+            cur.execute("INSERT INTO Accounts(Name, Comment, Url, User, Length, Password) VALUES (?, ?, ?, ?, ?, ?)", 
+                        (row[0], row[1], row[2], row[3], length, crypto) )
+            dbCon.commit()
+
+    dbCon.close()
+
+
 else:
     dbCon = db.initializeDataBase(config, args.category)
     cur = dbCon.cursor()
@@ -140,9 +171,8 @@ else:
     emptyResult = True
     for answer in cur.fetchall():
         emptyResult = False
-        print answer
         data = gpg.decrypt( answer[5], answer[6] )
-        print 'User:', data[2], 'Password:', data[0]
+        print 'User:', answer[4], 'Password:', data[0]
 #        p = subprocess.Popen(['/usr/bin/xclip', '-i', '-l', '1'], 
         p = subprocess.Popen(['/usr/bin/xsel', '-i'], 
                              stdin=subprocess.PIPE,
