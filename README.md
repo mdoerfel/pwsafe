@@ -127,9 +127,9 @@ each category. Only `verbosity`, `category`, and `dbbasedir` are explicitly
 used from this section. All other values can be overwritten or substituted in
 the following sections.
 
-The sections ``, ``, and `` provite special options for the selected
-category. Required is at least the entry ``db`` which specifies the name of
-the database file (relative to the `dbbasedir`).
+The sections `company`, `admin`, and `private` provide special options for the
+selected category. Required is at least the entry ``db`` which specifies the
+name of the database file (relative to the `dbbasedir`).
 
 The values have the following interpretation:
 
