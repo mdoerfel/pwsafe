@@ -9,6 +9,7 @@
 import os
 import sqlite3
 
+
 #
 # construct db name from category and config file
 #
@@ -22,7 +23,6 @@ def getDataBaseFile(config, category):
     return dbName
 
 
-
 def initializeDataBase(config, category):
     dbName = getDataBaseFile(config, category)
     dbConnection = None
@@ -31,7 +31,9 @@ def initializeDataBase(config, category):
         try:
             dbConnection = sqlite3.connect(dbName)
             cur = dbConnection.cursor()
-            cur.execute("CREATE TABLE Accounts(Id INT PRIMARY KEY, Name TEXT, Comment TEXT, Url TEXT, User Text, Length INT, Password TEXT)")
+            cur.execute("CREATE TABLE Accounts(Id INT PRIMARY KEY, "
+                        "Name TEXT, Comment TEXT, Url TEXT, User Text, "
+                        "Length INT, Password TEXT)")
 
         except sqlite3.Error, e:
             print "Error %s:" % e.args[0]

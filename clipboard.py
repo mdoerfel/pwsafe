@@ -14,7 +14,7 @@ def getClipboard():
 
 
 def setClipboard(data):
-    p = subprocess.Popen(['/usr/bin/xsel', '-i'], 
+    p = subprocess.Popen(['/usr/bin/xsel', '-i'],
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)

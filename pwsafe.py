@@ -16,20 +16,19 @@ import gpg
 
 config = ConfigParser.SafeConfigParser()
 config.read(['pwsafe.cfg', os.path.expanduser('~/.pwsafe/pwsafe.cfg')])
-# Usage: value = config.get( 'Section', 'option', false, {'option' : 'override'} )
 
 
 parser = argparse.ArgumentParser()
 #
 # Basic arguments
 #
-parser.add_argument("-v", "--verbosity", action="count", 
+parser.add_argument("-v", "--verbosity", action="count",
                     default=config.getint('DEFAULT', 'verbosity'),
                     help="increase output verbosity")
-parser.add_argument("key", nargs='?', 
+parser.add_argument("key", nargs='?',
                     help="lookup key, if not provided the "
                          "current selection is used")
-parser.add_argument("-c", "--category", 
+parser.add_argument("-c", "--category",
                     choices=['all', 'admin', 'company', 'private'],
                     default=config.get('DEFAULT', 'category'),
                     help='specify the category for the key')
@@ -39,7 +38,7 @@ parser.add_argument("-c", "--category",
 #
 group = parser.add_mutually_exclusive_group()
 group.add_argument("-a", "--add", action="store_true",
-                    help="add an entry")
+                   help="add an entry")
 parser.add_argument("-C", "--comment",
                     help="specify comment")
 parser.add_argument("-U", "--url",
@@ -56,7 +55,7 @@ parser.add_argument("-P", "--ask-password", action="store_true",
 # optional commands: --list
 #
 group.add_argument("-l", "--list", action="store_true",
-                    help="list all entries")
+                   help="list all entries")
 parser.add_argument("-d", "--decrypt", action="store_true",
                     help="show decrypted passwords in listing")
 
@@ -64,7 +63,7 @@ parser.add_argument("-d", "--decrypt", action="store_true",
 # optional commands: --import
 #
 group.add_argument("-i", "--import", dest='importer', action="store_true",
-                    help="import a batch of entries from a CSV")
+                   help="import a batch of entries from a CSV")
 parser.add_argument("-f", "--file",
                     help="file with CSV entries")
 parser.add_argument("-n", "--no-action", action="store_true",
@@ -72,7 +71,6 @@ parser.add_argument("-n", "--no-action", action="store_true",
 
 
 args = parser.parse_args()
-
 
 
 if args.add:
@@ -83,12 +81,12 @@ if args.add:
     dbCon = db.initializeDataBase(config, args.category)
     cur = dbCon.cursor()
 
-    if args.key == None:
+    if args.key is None:
         args.key = clipboard.getClipboard()
 
     length = config.getint(args.category, 'length')
-    if args.user == None:
-        args.user = subprocess.check_output(['/usr/bin/pwgen', 
+    if args.user is None:
+        args.user = subprocess.check_output(['/usr/bin/pwgen',
                                              '-AB', str(length+2), '1'])
         print 'user:', args.user
 
@@ -98,23 +96,24 @@ if args.add:
         if password != getpass.getpass("Re-enter password:"):
             print 'Password mismatch!'
             exit(2)
-    if password == None:
-        password = subprocess.check_output(['/usr/bin/pwgen', 
+    if password is None:
+        password = subprocess.check_output(['/usr/bin/pwgen',
                                             '-s', str(length), '1'])
 
-    if args.url == None:
+    if args.url is None:
         args.url = args.key
 
     crypto = gpg.crypt(config, args.category, password, args.user, args.url)
 
-    cur.execute("INSERT INTO Accounts(Name, Comment, Url, User, Length, Password) VALUES (?, ?, ?, ?, ?, ?)", 
-                (args.key, args.comment, args.url, args.user, length, crypto) )
+    cur.execute("INSERT INTO Accounts(Name, Comment, Url, User, Length, "
+                "Password) VALUES (?, ?, ?, ?, ?, ?)",
+                (args.key, args.comment, args.url, args.user, length, crypto))
     dbCon.commit()
 
 
 elif args.list:
     categories = []
-    if ( args.category == 'all' ):
+    if (args.category == 'all'):
         categories.append('admin')
         categories.append('company')
         categories.append('private')
@@ -130,11 +129,14 @@ elif args.list:
             emptyResult = False
             print '[', answer[1], ']'
             print 'Comment  =', answer[2]
-            print 'URL      =', answer[3].replace('\n', '') if answer[3] != None else ''
-            print 'User     =', answer[4].replace('\n', '') if answer[4] != None else ''
+            print 'URL      =', \
+                answer[3].replace('\n', '') if answer[3] != None else ''
+            print 'User     =', \
+                answer[4].replace('\n', '') if answer[4] != None else ''
             if args.decrypt:
-                data = gpg.decrypt( answer[5], answer[6] )
-                print 'Password =', data[0].replace('\n', '') if data[0] != None else ''
+                data = gpg.decrypt(answer[5], answer[6])
+                print 'Password =', \
+                    data[0].replace('\n', '') if data[0] != None else ''
             print
         dbCon.close()
 
@@ -153,8 +155,9 @@ elif args.importer:
             continue
         crypto = gpg.crypt(config, args.category, row[4], row[3], row[2])
         if not args.no_action:
-            cur.execute("INSERT INTO Accounts(Name, Comment, Url, User, Length, Password) VALUES (?, ?, ?, ?, ?, ?)", 
-                        (row[0], row[1], row[2], row[3], length, crypto) )
+            cur.execute("INSERT INTO Accounts(Name, Comment, Url, User, "
+                        "Length, Password) VALUES (?, ?, ?, ?, ?, ?)",
+                        (row[0], row[1], row[2], row[3], length, crypto))
             dbCon.commit()
 
     dbCon.close()
@@ -164,16 +167,17 @@ else:
     dbCon = db.initializeDataBase(config, args.category)
     cur = dbCon.cursor()
 
-    if args.key == None:
+    if args.key is None:
         args.key = clipboard.getClipboard()
 
-    args.key = '%' + args.key + '%';
+    args.key = '%' + args.key + '%'
     theKey = (args.key, args.key, args.key)
-    cur.execute('SELECT * FROM Accounts WHERE Name LIKE ? OR Comment LIKE ? OR Url LIKE ?', (theKey))
+    cur.execute("SELECT * FROM Accounts WHERE Name LIKE ? OR Comment LIKE ? "
+                "OR Url LIKE ?", (theKey))
     emptyResult = True
     for answer in cur.fetchall():
         emptyResult = False
-        data = gpg.decrypt( answer[5], answer[6] )
+        data = gpg.decrypt(answer[5], answer[6])
         print 'User:', answer[4], 'Password:', data[0]
         clipboard.setClipboard(data[0])
 

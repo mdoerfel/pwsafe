@@ -36,9 +36,9 @@ def crypt(config, category, password, user, url):
 
 def decrypt(length, cr):
 
-    p = subprocess.Popen(['/usr/bin/gpg', '-d', '-q', '--batch'], 
+    p = subprocess.Popen(['/usr/bin/gpg', '-d', '-q', '--batch'],
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
     raw = p.communicate(input=cr)[0]
-    return [ raw[0:length] ] + raw.split(':')
+    return [raw[0:length]] + raw.split(':')
