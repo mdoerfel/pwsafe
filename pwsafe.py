@@ -9,8 +9,10 @@ import subprocess
 import sys
 
 # local modules
+import clipboard
 import db
 import gpg
+
 
 config = ConfigParser.SafeConfigParser()
 config.read(['pwsafe.cfg', os.path.expanduser('~/.pwsafe/pwsafe.cfg')])
@@ -64,9 +66,9 @@ parser.add_argument("-d", "--decrypt", action="store_true",
 group.add_argument("-i", "--import", dest='importer', action="store_true",
                     help="import a batch of entries from a CSV")
 parser.add_argument("-f", "--file",
-                    help="file with CSV entries, can be - for stdin")
+                    help="file with CSV entries")
 parser.add_argument("-n", "--no-action", action="store_true",
-                    help="import CSV entries but do not modify DB")
+                    help="read CSV entries but do not modify DB")
 
 
 args = parser.parse_args()
@@ -82,7 +84,7 @@ if args.add:
     cur = dbCon.cursor()
 
     if args.key == None:
-        args.key = subprocess.check_output(['/usr/bin/xclip', '-o'])
+        args.key = clipboard.getClipboard()
 
     length = config.getint(args.category, 'length')
     if args.user == None:
@@ -100,8 +102,8 @@ if args.add:
         password = subprocess.check_output(['/usr/bin/pwgen', 
                                             '-s', str(length), '1'])
 
-    if url.args == None:
-        url.args = args.key
+    if args.url == None:
+        args.url = args.key
 
     crypto = gpg.crypt(config, args.category, password, args.user, args.url)
 
@@ -163,7 +165,7 @@ else:
     cur = dbCon.cursor()
 
     if args.key == None:
-        args.key = subprocess.check_output(['/usr/bin/xclip', '-o'])
+        args.key = clipboard.getClipboard()
 
     args.key = '%' + args.key + '%';
     theKey = (args.key, args.key, args.key)
@@ -173,15 +175,10 @@ else:
         emptyResult = False
         data = gpg.decrypt( answer[5], answer[6] )
         print 'User:', answer[4], 'Password:', data[0]
-#        p = subprocess.Popen(['/usr/bin/xclip', '-i', '-l', '1'], 
-        p = subprocess.Popen(['/usr/bin/xsel', '-i'], 
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-        result = p.communicate(input=data[0])[0]
+        clipboard.setClipboard(data[0])
 
     if emptyResult:
         print 'Sorry, no matching entry'
 
-if dbCon:
-    dbCon.close()
+    if dbCon:
+        dbCon.close()
