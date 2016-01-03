@@ -88,7 +88,9 @@ if args.add:
     if args.user is None:
         args.user = subprocess.check_output(['/usr/bin/pwgen',
                                              '-AB', str(length+2), '1'])
+        args.user = args.user.replace('\n', '')
         print 'user:', args.user
+        clipboard.setClipboard(args.user, 1)
 
     password = args.password
     if args.ask_password:
@@ -101,7 +103,8 @@ if args.add:
                                             '-s', str(length), '1'])
         password = password.replace('\n', '')
         print 'created password:', password
-        clipboard.setClipboard(password)
+        clipboard.setClipboard(password, 2)
+        clipboard.setClipboard("     ")
 
     if args.url is None:
         args.url = args.key
@@ -182,7 +185,8 @@ else:
         emptyResult = False
         data = gpg.decrypt(answer[5], answer[6])
         print 'User:', answer[4], 'Password:', data[0]
-        clipboard.setClipboard(data[0])
+        clipboard.setClipboard(data[0], 1)
+        clipboard.setClipboard("     ")
 
     if emptyResult:
         print 'Sorry, no matching entry'

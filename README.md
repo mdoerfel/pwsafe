@@ -43,11 +43,12 @@ by your own. Then issue this command:
     created password: u6XeQpJ8
     $
 
-The new password has been added to the X11 selection and can be pasted into
-any form field by pressing the middle mouse button.
+The new password has been added to the X11 selection and can be pasted
+excactly two times into any form field by pressing the middle mouse button.
 
 If you want to have an auto-generated username just omit the option `-u
-myusername`.
+myusername`. The created username is then available for a single selection,
+too.
 
 Sometimes it is useful to enter values for the username which are not exactly
 used as usernames, e.g. the SSID of a WLAN for which the password is stored.
@@ -139,11 +140,3 @@ The values have the following interpretation:
 * encrypt-to-default: The default key, only used by ConfigParser for substitutions
 * length: The length of a auto-generated password.
 * verbosity: The default verbosity level.
-
-## Known Issues
-Currently (January 2016) the behavior of xclip seems to be broken. Officially
-xclip has an option `--loop n` where it waits for a number of paste operations
-before it continues. https://github.com/sol/pwsafe uses this option to provide
-first the username, then the password for two consecutive paste
-operations. But there seems to be an issue where this --loop option fails. See
-[Stack Overflow](http://stackoverflow.com/a/24332080) for an explanation.
