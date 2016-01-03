@@ -99,6 +99,9 @@ if args.add:
     if password is None:
         password = subprocess.check_output(['/usr/bin/pwgen',
                                             '-s', str(length), '1'])
+        password = password.replace('\n', '')
+        print 'created password:', password
+        clipboard.setClipboard(password)
 
     if args.url is None:
         args.url = args.key
