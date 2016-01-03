@@ -25,7 +25,8 @@ def crypt(config, category, password, user, url):
 
     raw = password + ':' + user + ':' + url
     raw = raw.replace('\n', '').replace('\r', '')
-    p = subprocess.Popen(['/usr/bin/gpg', '-ea'] + receivers, 
+    p = subprocess.Popen(['/usr/bin/gpg', '-q', '--batch',
+                          '-ea'] + receivers,
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE)
