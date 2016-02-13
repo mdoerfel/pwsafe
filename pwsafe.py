@@ -149,7 +149,7 @@ elif args.list:
 
 elif args.importer:
     # args.file
-    # args.no_import
+    # args.no_action
     dbCon = db.initializeDataBase(config, args.category)
     cur = dbCon.cursor()
     length = config.getint(args.category, 'length')
@@ -157,10 +157,15 @@ elif args.importer:
     csvfile = open(args.file, 'rb')
     reader = csv.reader(csvfile)
     for row in reader:
+        if row is None or len(row) < 5:
+            continue
         if row[0][0] == '#':
             continue
         crypto = gpg.crypt(config, args.category, row[4], row[3], row[2])
-        if not args.no_action:
+        length = len(row[4])
+        if args.no_action:
+            print "would insert:", row[0], row[1], row[2], row[3], length, crypto[0:8]
+        else:
             cur.execute("INSERT INTO Accounts(Name, Comment, Url, User, "
                         "Length, Password) VALUES (?, ?, ?, ?, ?, ?)",
                         (row[0], row[1], row[2], row[3], length, crypto))
